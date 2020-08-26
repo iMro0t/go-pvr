@@ -4,6 +4,24 @@ package pvr
 #include "../kodi/xbmc_pvr_dll.h"
 */
 import "C"
+import (
+	"runtime"
+	"unsafe"
+)
+
+var (
+	//BackendName String of Backend Name
+	BackendName = "Unknown"
+
+	//BackendVersion String of Backend Version
+	BackendVersion = "0.0.1"
+
+	//BackendHostName String of Backend Host Name
+	BackendHostName = ""
+
+	//ConnectionStatus String of Backend Connection Status
+	ConnectionStatus = "connected"
+)
 
 //export OnSystemSleep
 func OnSystemSleep() {}
@@ -34,22 +52,22 @@ func GetAddonCapabilities(cap *C.PVR_ADDON_CAPABILITIES) C.PVR_ERROR {
 
 //export GetBackendName
 func GetBackendName() *C.cchar_t {
-	return C.CString("JioTV PVR (botallen)")
+	return C.CString(BackendName)
 }
 
 //export GetBackendVersion
 func GetBackendVersion() *C.cchar_t {
-	return C.CString("0.0.1")
+	return C.CString(BackendVersion)
 }
 
 //export GetConnectionString
 func GetConnectionString() *C.cchar_t {
-	return C.CString("connected")
+	return C.CString(ConnectionStatus)
 }
 
 //export GetBackendHostname
 func GetBackendHostname() *C.cchar_t {
-	return C.CString("")
+	return C.CString(BackendHostName)
 }
 
 //export GetDriveSpace
@@ -69,8 +87,8 @@ func CallMenuHook(menuhook *C.cPVR_MENUHOOK_t, _ *C.cPVR_MENUHOOK_DATA_t) C.PVR_
 	return C.PVR_ERROR_NOT_IMPLEMENTED
 }
 
-func StrToCCharArr(str string) [1024]C.char {
-	dest := [1024]C.char{}
+func StrToCCharArr(str string) [C.PVR_ADDON_NAME_STRING_LENGTH]C.char {
+	dest := [C.PVR_ADDON_NAME_STRING_LENGTH]C.char{}
 	for i, c := range []byte(str) {
 		dest[i] = C.char(c)
 	}
@@ -79,8 +97,22 @@ func StrToCCharArr(str string) [1024]C.char {
 	return dest
 }
 
-func StrToUint8Arr(str string) [1024]byte {
-	dest := [1024]byte{}
-	copy(dest[:], str)
+func StrToUint8Arr(str string) [C.PVR_ADDON_NAME_STRING_LENGTH]byte {
+	dest := [C.PVR_ADDON_NAME_STRING_LENGTH]byte{}
+	if false { //runtime.GOOS == "windows" {
+		copy(dest[3:], str)
+	} else {
+		copy(dest[:], str)
+	}
 	return dest
+}
+
+func StrToPtr(str string) uint64 {
+	if str == "" {
+		return uint64(uintptr(unsafe.Pointer(C.CString(""))))
+	}
+	if runtime.GOOS == "windows" {
+		str = "   " + str
+	}
+	return uint64(uintptr(unsafe.Pointer(C.CString(str))))
 }

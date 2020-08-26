@@ -69,7 +69,7 @@ func GetRecordingLastPlayedPosition(recording *C.cPVR_RECORDING_t) C.int {
 }
 
 //export GetRecordingEdl
-func GetRecordingEdl(_ *C.cPVR_RECORDING_t, _ *C.PVR_EDL_ENTRY, _ *C.int) C.PVR_ERROR {
+func GetRecordingEdl(*C.cPVR_RECORDING_t, *C.PVR_EDL_ENTRY, *C.int) C.PVR_ERROR {
 	return C.PVR_ERROR_NOT_IMPLEMENTED
 }
 

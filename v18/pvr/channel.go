@@ -2,6 +2,7 @@ package pvr
 
 import (
 	"fmt"
+	"sync"
 )
 
 /*
@@ -10,8 +11,15 @@ import (
 import "C"
 
 var (
-	channels []Channel
-	groups   []ChannelGroup
+	channels                   []Channel
+	groups                     []ChannelGroup
+	mutex                      sync.Mutex
+	channelStreamPropsCallback = func(channelId int) *Stream {
+		if c := GetChannel(channelId); c != nil {
+			return &c.Live
+		}
+		return nil
+	}
 )
 
 type Channel struct {
@@ -40,16 +48,24 @@ type ChannelGroup struct {
 
 func AddChannel(channel Channel) {
 	// XBMC.Log(XBMC.DEBUG, "Adding channel ", channel.Name)
+	mutex.Lock()
 	channels = append(channels, channel)
+	mutex.Unlock()
+}
+
+func SetChannelStreamCallback(f func(channelID int) *Stream) {
+	channelStreamPropsCallback = f
 }
 
 func AddChannelGroup(group ChannelGroup) {
+	mutex.Lock()
 	groups = append(groups, group)
+	mutex.Unlock()
 }
 
-func GetChannel(channel *C.cPVR_CHANNEL_t) *Channel {
+func GetChannel(channelID int) *Channel {
 	for _, c := range channels {
-		if c.ID == (int)(channel.iUniqueId) {
+		if c.ID == channelID {
 			return &c
 		}
 	}
@@ -63,7 +79,7 @@ func GetChannelsAmount() C.int {
 
 //export GetChannels
 func GetChannels(handle C.ADDON_HANDLE, isRadio C.bool) C.PVR_ERROR {
-	XBMC.Log(XBMC.DEBUG, fmt.Sprintf("Get Channels called. Giving total %d channels", len(channels)))
+	XBMC.Log(XBMC.DEBUG, fmt.Sprintf("Transfering %d channels", len(channels)))
 	for _, channel := range channels {
 		if channel.IsRadio == bool(isRadio) {
 			PVR.TransferChannelEntry(handle, channel)
@@ -80,8 +96,8 @@ func GetChannelStreamProperties(channel *C.cPVR_CHANNEL_t, props *C.struct_PVR_N
 	if (int)(*propsCount) < 2 {
 		return C.PVR_ERROR_INVALID_PARAMETERS
 	}
-	if c := GetChannel(channel); c != nil {
-		count := PVR.SetProperties(props, c.Live)
+	if live := channelStreamPropsCallback((int)(channel.iUniqueId)); live != nil {
+		count := PVR.SetProperties(props, *live)
 		*propsCount = C.uint(count)
 		return C.PVR_ERROR_NO_ERROR
 	}

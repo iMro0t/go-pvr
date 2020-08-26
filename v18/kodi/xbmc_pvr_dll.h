@@ -15,6 +15,7 @@
 #define nullPTR ((void *)0)
 
 typedef const char cchar_t;
+typedef const time_t *ctime_t;
 typedef const EPG_TAG cEPG_TAG_t;
 typedef const PVR_RECORDING cPVR_RECORDING_t;
 typedef const PVR_TIMER cPVR_TIMER_t;
@@ -654,48 +655,48 @@ extern "C"
   //  */
   extern void SetSpeed(int speed);
 
-  // /*!
-  //  *  Get the hostname of the pvr backend server
-  //  *  @return hostname as ip address or alias. If backend does not utilize a server, return empty string.
-  //  */
+  /*!
+   *  Get the hostname of the pvr backend server
+   *  @return hostname as ip address or alias. If backend does not utilize a server, return empty string.
+   */
   extern const char *GetBackendHostname();
 
-  // /*!
-  //  *  Check if timeshift is active
-  //  *  @return true if timeshift is active
-  //  */
+  /*!
+   *  Check if timeshift is active
+   *  @return true if timeshift is active
+   */
   extern bool IsTimeshifting();
 
-  // /*!
-  //  *  Check for real-time streaming
-  //  *  @return true if current stream is real-time
-  //  */
+  /*!
+   *  Check for real-time streaming
+   *  @return true if current stream is real-time
+   */
   extern bool IsRealTimeStream();
 
-  // /*!
-  //  * Tell the client the time frame to use when notifying epg events back to Kodi. The client might push epg events asynchronously
-  //  * to Kodi using the callback function EpgEventStateChange. To be able to only push events that are actually of interest for Kodi,
-  //  * client needs to know about the epg time frame Kodi uses. Kodi supplies the current epg time frame value in PVR_PROPERTIES.iEpgMaxDays
-  //  * when creating the addon and calls SetEPGTimeFrame later whenever Kodi's epg time frame value changes.
-  //  * @param iDays number of days from "now". EPG_TIMEFRAME_UNLIMITED means that Kodi is interested in all epg events, regardless of event times.
-  //  * @return PVR_ERROR_NO_ERROR if new value was successfully set.
-  //  * @remarks Required if bSupportsEPG is set to true. Return PVR_ERROR_NOT_IMPLEMENTED if this add-on won't provide this function.
-  //  */
+  /*!
+   * Tell the client the time frame to use when notifying epg events back to Kodi. The client might push epg events asynchronously
+   * to Kodi using the callback function EpgEventStateChange. To be able to only push events that are actually of interest for Kodi,
+   * client needs to know about the epg time frame Kodi uses. Kodi supplies the current epg time frame value in PVR_PROPERTIES.iEpgMaxDays
+   * when creating the addon and calls SetEPGTimeFrame later whenever Kodi's epg time frame value changes.
+   * @param iDays number of days from "now". EPG_TIMEFRAME_UNLIMITED means that Kodi is interested in all epg events, regardless of event times.
+   * @return PVR_ERROR_NO_ERROR if new value was successfully set.
+   * @remarks Required if bSupportsEPG is set to true. Return PVR_ERROR_NOT_IMPLEMENTED if this add-on won't provide this function.
+   */
   extern PVR_ERROR SetEPGTimeFrame(int iDays);
 
-  // /*!
-  //  * Notify the pvr addon for power management events
-  //  */
+  /*!
+   * Notify the pvr addon for power management events
+   */
   extern void OnSystemSleep();
   extern void OnSystemWake();
   extern void OnPowerSavingActivated();
   extern void OnPowerSavingDeactivated();
 
-  // /*!
-  //  * Get stream times.
-  //  * @param times A pointer to the data to be filled by the implementation.
-  //  * @return PVR_ERROR_NO_ERROR on success.
-  //  */
+  /*!
+   * Get stream times.
+   * @param times A pointer to the data to be filled by the implementation.
+   * @return PVR_ERROR_NO_ERROR on success.
+   */
   extern PVR_ERROR GetStreamTimes(PVR_STREAM_TIMES *times);
   /*!
    * Called by Kodi to assign the function pointers of this add-on to pClient.

@@ -12,6 +12,7 @@ import (
 var (
 	XBMC        GoHelper_libXBMC_addon
 	PVR         GoHelper_libXBMC_pvr
+	GUI         GoHelper_libKODI_guilib
 	addonStatus C.ADDON_STATUS = C.ADDON_STATUS_UNKNOWN
 	clientPath  string
 	Call        func()
@@ -102,14 +103,13 @@ func ADDON_Create(handle unsafe.Pointer, properties unsafe.Pointer) C.ADDON_STAT
 		return C.ADDON_STATUS_UNKNOWN
 	}
 	XBMC = NewlibXBMC_addon()
-	if !XBMC.RegisterMe(handle) {
-		XBMC.Free()
-		return C.ADDON_STATUS_PERMANENT_FAILURE
-	}
 	PVR = NewlibXBMC_pvr()
-	if !PVR.RegisterMe(handle) {
+	GUI = NewlibKODI_guilib()
+
+	if !XBMC.RegisterMe(handle) || !PVR.RegisterMe(handle) || !GUI.RegisterMe(handle) {
 		PVR.Free()
 		XBMC.Free()
+		GUI.Free()
 		return C.ADDON_STATUS_PERMANENT_FAILURE
 	}
 	XBMC.Log(XBMC.DEBUG, "pvr.jiotv - Creating the PVR demo add-on")

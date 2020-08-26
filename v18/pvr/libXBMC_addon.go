@@ -1,6 +1,7 @@
 package pvr
 
 /*
+#include <stdlib.h>
 #include "workaround.h"
 #include "../kodi/libXBMC_addon.h"
 */
@@ -16,7 +17,6 @@ type GoHelper_libXBMC_addon struct {
 	INFO   C.int
 	NOTICE C.int
 	ERROR  C.int
-	addon  C.CGoHelper_libXBMC_addon
 }
 
 func NewlibXBMC_addon() GoHelper_libXBMC_addon {
@@ -25,19 +25,36 @@ func NewlibXBMC_addon() GoHelper_libXBMC_addon {
 		INFO:   C.LOG_INFO,
 		NOTICE: C.LOG_NOTICE,
 		ERROR:  C.LOG_ERROR,
-		addon:  C.CGoHelper_libXBMC_addonInit(),
 	}
 }
 
 func (xbmc GoHelper_libXBMC_addon) RegisterMe(hdl unsafe.Pointer) C.bool {
-	return C.CGoHelper_libXBMC_addonRegisterMe(xbmc.addon, hdl)
+	return C.CGoHelper_libXBMC_addonRegisterMe(hdl)
 }
 
 func (xbmc GoHelper_libXBMC_addon) Log(loglevel C.int, format ...interface{}) {
 	log.Print(fmt.Sprint(format...))
-	C.CGoHelper_libXBMC_addonLog(xbmc.addon, loglevel, C.CString(fmt.Sprint(format...)))
+	C.CGoHelper_libXBMC_addonLog(loglevel, C.CString(fmt.Sprint(format...)))
+}
+
+func (xbmc GoHelper_libXBMC_addon) GetSettingString(name string) string {
+	cName := C.CString(name)
+	cValue := C.CString("")
+	C.CGoHelper_libXBMC_addonGetSetting(cName, unsafe.Pointer(cValue))
+	// C.free(unsafe.Pointer(cName))
+	// defer C.free(unsafe.Pointer(cValue))
+	return C.GoString(cValue)
+}
+
+func (xbmc GoHelper_libXBMC_addon) GetSettingBool(name string) bool {
+	cName := C.CString(name)
+	cValue := C.bool(false)
+	C.CGoHelper_libXBMC_addonGetSetting(cName, unsafe.Pointer(&cValue))
+	// C.free(unsafe.Pointer(cName))
+	// defer C.free(unsafe.Pointer(&cValue))
+	return bool(cValue)
 }
 
 func (xbmc GoHelper_libXBMC_addon) Free() {
-	C.CGoHelper_libXBMC_addonFree(xbmc.addon)
+	C.CGoHelper_libXBMC_addonFree()
 }
